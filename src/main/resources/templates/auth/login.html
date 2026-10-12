@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Login')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanbanPop! | Login</title>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <!-- Main Content Container -->
+    <main class="container py-5 my-auto">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+
+                <!-- Login Sticker Card -->
+                <div class="sticker-card p-4 p-md-5" style="box-shadow: 8px 8px 0px #1E293B;">
+                    
+                    <!-- Card Header Icon & Title -->
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex p-3 rounded-circle mb-2 border border-dark" style="background: var(--tertiary-yellow-light); box-shadow: 3px 3px 0px #1E293B;">
+                            <i class="fa-solid fa-lock-open fs-2" style="color: #D97706;"></i>
+                        </div>
+                        <h2 class="h3 fw-black mb-1">Welcome Back!</h2>
+                        <p class="text-muted small">Sign in to access your collaborative Kanban boards</p>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div th:if="${errorMessage}" class="playful-alert playful-alert-danger">
+                        <i class="fa-solid fa-circle-exclamation fs-5"></i>
+                        <span th:text="${errorMessage}">Invalid username or password.</span>
+                    </div>
+
+                    <div th:if="${logoutMessage}" class="playful-alert playful-alert-info">
+                        <i class="fa-solid fa-circle-info fs-5"></i>
+                        <span th:text="${logoutMessage}">You have logged out successfully.</span>
+                    </div>
+
+                    <div th:if="${successMessage}" class="playful-alert playful-alert-success">
+                        <i class="fa-solid fa-circle-check fs-5"></i>
+                        <span th:text="${successMessage}">Account registered successfully!</span>
+                    </div>
+
+                    <!-- Spring Security Login Form -->
+                    <form th:action="@{/login}" method="post" id="loginForm">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <!-- Username or Email -->
+                        <div class="mb-3">
+                            <label for="username" class="playful-label">Username or Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-dark bg-light"><i class="fa-solid fa-user"></i></span>
+                                <input type="text" id="username" name="username" class="form-control playful-input" 
+                                       placeholder="Enter your username or email" required autofocus>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-4">
+                            <label for="password" class="playful-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-dark bg-light"><i class="fa-solid fa-key"></i></span>
+                                <input type="password" id="password" name="password" class="form-control playful-input" 
+                                       placeholder="Enter your password" required>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-candy btn-candy-primary w-100 justify-content-center py-2 fs-5 mb-3">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                            <span>Log In</span>
+                        </button>
+                    </form>
+
+                    <!-- Fast Demo One-Click Fill -->
+                    <div class="p-3 rounded-3 mt-3 border border-dark" style="background: var(--bg-canvas);">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="fw-bold text-uppercase" style="letter-spacing: 0.05em;"><i class="fa-solid fa-bolt text-warning me-1"></i> Quick Test Sign-In</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-candy btn-candy-white btn-candy-sm flex-grow-1 justify-content-center"
+                                    onclick="fillCredentials('demo', 'password123')">
+                                <i class="fa-solid fa-user text-primary"></i> Demo User
+                            </button>
+                            <button type="button" class="btn-candy btn-candy-yellow btn-candy-sm flex-grow-1 justify-content-center"
+                                    onclick="fillCredentials('admin', 'admin123')">
+                                <i class="fa-solid fa-shield-halved text-dark"></i> Admin
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Signup Link -->
+                    <div class="text-center mt-4 pt-3 border-top border-dark">
+                        <span class="text-muted">Don't have an account yet?</span>
+                        <a th:href="@{/register}" href="/register" class="fw-bold text-decoration-none ms-1" style="color: var(--accent-violet);">
+                            Create Free Account &rarr;
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <script>
+        function fillCredentials(u, p) {
+            document.getElementById('username').value = u;
+            document.getElementById('password').value = p;
+        }
+    </script>
+</body>
+</html>

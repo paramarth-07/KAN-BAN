@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sign Up')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanbanPop! | Sign Up</title>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <!-- Main Content Container -->
+    <main class="container py-5 my-auto">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+
+                <!-- Register Sticker Card -->
+                <div class="sticker-card p-4 p-md-5" style="box-shadow: 8px 8px 0px #1E293B;">
+                    
+                    <!-- Card Header Icon & Title -->
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex p-3 rounded-circle mb-2 border border-dark" style="background: var(--accent-violet-light); box-shadow: 3px 3px 0px #1E293B;">
+                            <i class="fa-solid fa-user-plus fs-2" style="color: var(--accent-violet);"></i>
+                        </div>
+                        <h2 class="h3 fw-black mb-1">Create Your Account</h2>
+                        <p class="text-muted small">Join KanbanPop to create, organize, and manage your tasks</p>
+                    </div>
+
+                    <!-- General Error Alert -->
+                    <div th:if="${generalError}" class="playful-alert playful-alert-danger">
+                        <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+                        <span th:text="${generalError}">Registration failed. Please check inputs.</span>
+                    </div>
+
+                    <!-- Registration Form -->
+                    <form th:action="@{/register}" th:object="${user}" method="post" id="registerForm">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="username" class="playful-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-dark bg-light"><i class="fa-solid fa-at"></i></span>
+                                <input type="text" id="username" th:field="*{username}" class="form-control playful-input"
+                                       th:classappend="${#fields.hasErrors('username')} ? 'is-invalid' : ''"
+                                       placeholder="e.g. alexsmith" required>
+                            </div>
+                            <div class="text-danger small mt-1 fw-bold" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">
+                                Invalid username.
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="playful-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-dark bg-light"><i class="fa-solid fa-envelope"></i></span>
+                                <input type="email" id="email" th:field="*{email}" class="form-control playful-input"
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
+                                       placeholder="alex@example.com" required>
+                            </div>
+                            <div class="text-danger small mt-1 fw-bold" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                                Invalid email address.
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label for="password" class="playful-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-dark bg-light"><i class="fa-solid fa-lock"></i></span>
+                                <input type="password" id="password" th:field="*{password}" class="form-control playful-input"
+                                       th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''"
+                                       placeholder="At least 6 characters" required>
+                            </div>
+                            <div class="text-danger small mt-1 fw-bold" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
+                                Password required.
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="playful-label">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-dark bg-light"><i class="fa-solid fa-shield-check"></i></span>
+                                <input type="password" id="confirmPassword" th:field="*{confirmPassword}" class="form-control playful-input"
+                                       th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid' : ''"
+                                       placeholder="Re-type your password" required>
+                            </div>
+                            <div class="text-danger small mt-1 fw-bold" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">
+                                Passwords do not match.
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-candy btn-candy-secondary w-100 justify-content-center py-2 fs-5 mb-3">
+                            <i class="fa-solid fa-sparkles"></i>
+                            <span>Create Account</span>
+                        </button>
+                    </form>
+
+                    <!-- Login Link -->
+                    <div class="text-center mt-3 pt-3 border-top border-dark">
+                        <span class="text-muted">Already have an account?</span>
+                        <a th:href="@{/login}" href="/login" class="fw-bold text-decoration-none ms-1" style="color: var(--accent-violet);">
+                            Log In Here &rarr;
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

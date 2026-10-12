@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Server Error')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanbanPop! | Server Error</title>
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <main class="container py-5 my-auto text-center">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                
+                <div class="sticker-card p-5" style="box-shadow: 8px 8px 0px #1E293B;">
+                    <div class="d-inline-flex p-4 rounded-circle mb-3 border border-dark" style="background: var(--tertiary-yellow); box-shadow: 4px 4px 0px #1E293B;">
+                        <i class="fa-solid fa-triangle-exclamation fs-1" style="color: #1E293B;"></i>
+                    </div>
+
+                    <h1 class="display-3 fw-black mb-2" style="font-weight: 900; color: #D97706;" th:text="${status != null ? status : 500}">500</h1>
+                    <h2 class="h3 fw-bold mb-3">Unexpected Hiccup!</h2>
+                    
+                    <p class="text-muted mb-4" th:text="${message != null ? message : 'Something went wrong while processing your request. Please try again shortly.'}">
+                        An unexpected server error occurred.
+                    </p>
+
+                    <div class="d-flex justify-content-center gap-3">
+                        <a th:href="@{/boards}" href="/boards" class="btn-candy btn-candy-primary px-4 py-2 fs-5">
+                            <i class="fa-solid fa-house"></i> Return to Safety
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

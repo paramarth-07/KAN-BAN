@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(${board.title} + ' | Kanban')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanbanPop! | Board View</title>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <!-- Global Alerts -->
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <!-- Done Task Confetti Trigger -->
+    <div th:if="${taskDoneCelebration}" id="trigger-task-done-celebration" style="display:none;"></div>
+
+    <!-- Main Board View Container -->
+    <main class="container-fluid px-lg-5 py-4">
+
+        <!-- Board Top Bar -->
+        <div class="sticker-card p-4 mb-4" style="background: #FFFFFF;">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <a th:href="@{/boards}" href="/boards" class="btn-candy btn-candy-white btn-candy-sm">
+                            <i class="fa-solid fa-arrow-left"></i> All Boards
+                        </a>
+                        <span class="badge border border-dark rounded-pill" style="background: var(--tertiary-yellow-light); color: var(--text-main); font-weight: 700;">
+                            <i class="fa-solid fa-user me-1"></i> Owner: <span th:text="${board.user.username}">user</span>
+                        </span>
+                        <span class="badge border border-dark rounded-pill" style="background: var(--accent-violet-light); color: var(--text-main); font-weight: 700;">
+                            <i class="fa-solid fa-calendar me-1"></i> <span th:text="${#temporals.format(board.createdAt, 'MMM dd, yyyy')}">Oct 10, 2026</span>
+                        </span>
+                    </div>
+
+                    <h1 class="h2 fw-black mb-1" th:text="${board.title}">Board Title</h1>
+                    <p class="text-muted mb-0 small" th:text="${board.description != null and !board.description.isEmpty() ? board.description : 'No board description.'}">
+                        Board description text...
+                    </p>
+                </div>
+
+                <!-- Board Action Buttons -->
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button type="button" class="btn-candy btn-candy-primary" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        <span>Add Task</span>
+                    </button>
+                    <button type="button" class="btn-candy btn-candy-yellow" data-bs-toggle="modal" data-bs-target="#createBoardNoteModal">
+                        <i class="fa-solid fa-note-sticky"></i>
+                        <span>Add Note</span>
+                    </button>
+                    <button type="button" class="btn-candy btn-candy-white" data-bs-toggle="modal" data-bs-target="#editBoardModal">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>Edit Board</span>
+                    </button>
+                    <form th:action="@{'/boards/' + ${board.id} + '/delete'}" method="post" class="d-inline"
+                          onsubmit="return confirm('Are you sure you want to delete this entire board?');">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn-candy btn-candy-secondary" title="Delete Board">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3-Column Kanban Board Layout -->
+        <div class="kanban-board-container">
+            
+            <!-- ===============================================================
+                 COLUMN 1: TO DO
+                 =============================================================== -->
+            <div class="kanban-column" id="col-todo">
+                <div class="column-header column-header-todo">
+                    <h3 class="column-title">
+                        <span class="brand-icon" style="background: var(--accent-violet); color: #FFF;">
+                            <i class="fa-solid fa-list-check"></i>
+                        </span>
+                        <span>To Do</span>
+                    </h3>
+                    <span class="column-count-badge" th:text="${todoTasks.size()}">0</span>
+                </div>
+
+                <div class="column-dropzone" data-status="TODO" id="dropzone-todo">
+                    
+                    <!-- Task Cards Loop -->
+                    <div th:each="task : ${todoTasks}" class="task-card"
+                         th:data-id="${task.id}"
+                         th:data-title="${task.title}"
+                         th:data-description="${task.description}"
+                         th:data-status="${task.status.name()}"
+                         th:data-priority="${task.priority.name()}"
+                         th:data-due-date="${task.dueDate != null ? task.dueDate.toString() : ''}"
+                         th:data-board-id="${board.id}">
+                        
+                        <!-- Top Meta: Priority Badge & Actions -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge-priority" th:classappend="${task.priority.badgeClass}" th:text="${task.priority.displayName}">
+                                MEDIUM
+                            </span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm p-0 text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-ellipsis-vertical fs-6"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-dark shadow-sm">
+                                    <li>
+                                        <button type="button" class="dropdown-item btn-open-edit-task" data-bs-toggle="modal" data-bs-target="#editTaskModal">
+                                            <i class="fa-solid fa-pen text-primary me-2"></i> Edit Task
+                                        </button>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form th:action="@{'/boards/' + ${board.id} + '/tasks/' + ${task.id} + '/delete'}" method="post"
+                                              onsubmit="return confirm('Delete this task?');">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fa-solid fa-trash me-2"></i> Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Title -->
+                        <h4 class="task-title" th:text="${task.title}">Task Title</h4>
+
+                        <!-- Description -->
+                        <p class="task-desc" th:if="${task.description != null and !task.description.isEmpty()}" th:text="${task.description}">
+                            Task details...
+                        </p>
+
+                        <!-- Bottom Meta: Due Date & Step Buttons -->
+                        <div class="task-meta">
+                            <div>
+                                <span th:if="${task.dueDate != null}" class="task-due-date"
+                                      th:classappend="${task.isOverdue()} ? 'overdue' : (${task.isDueToday()} ? 'due-today' : '')">
+                                    <i class="fa-regular fa-clock"></i>
+                                    <span th:text="${#temporals.format(task.dueDate, 'MMM dd')}">Oct 15</span>
+                                </span>
+                                <span th:if="${task.dueDate == null}" class="task-due-date">
+                                    <i class="fa-regular fa-calendar-xmark"></i> No date
+                                </span>
+                            </div>
+
+                            <!-- Stepper (Move to In Progress) -->
+                            <div class="card-stepper">
+                                <form th:action="@{'/boards/' + ${board.id} + '/tasks/' + ${task.id} + '/step'}" method="post" class="m-0">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="forward" value="true" />
+                                    <button type="submit" class="btn-card-step" title="Move to In Progress">
+                                        <span>Next</span> <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Empty Placeholder Box -->
+                    <div th:if="${todoTasks.isEmpty()}" class="empty-state-box">
+                        <i class="fa-solid fa-clipboard-list fs-2 mb-2 text-muted"></i>
+                        <div>No tasks to do.</div>
+                        <small>Drag tasks here or click "+ Add Task"</small>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ===============================================================
+                 COLUMN 2: IN PROGRESS
+                 =============================================================== -->
+            <div class="kanban-column" id="col-in-progress">
+                <div class="column-header column-header-in-progress">
+                    <h3 class="column-title">
+                        <span class="brand-icon" style="background: var(--tertiary-yellow); color: #1E293B;">
+                            <i class="fa-solid fa-spinner"></i>
+                        </span>
+                        <span>In Progress</span>
+                    </h3>
+                    <span class="column-count-badge" th:text="${inProgressTasks.size()}">0</span>
+                </div>
+
+                <div class="column-dropzone" data-status="IN_PROGRESS" id="dropzone-in-progress">
+                    
+                    <!-- Task Cards Loop -->
+                    <div th:each="task : ${inProgressTasks}" class="task-card"
+                         th:data-id="${task.id}"
+                         th:data-title="${task.title}"
+                         th:data-description="${task.description}"
+                         th:data-status="${task.status.name()}"
+                         th:data-priority="${task.priority.name()}"
+                         th:data-due-date="${task.dueDate != null ? task.dueDate.toString() : ''}"
+                         th:data-board-id="${board.id}">
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge-priority" th:classappend="${task.priority.badgeClass}" th:text="${task.priority.displayName}">
+                                HIGH
+                            </span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm p-0 text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-ellipsis-vertical fs-6"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-dark shadow-sm">
+                                    <li>
+                                        <button type="button" class="dropdown-item btn-open-edit-task" data-bs-toggle="modal" data-bs-target="#editTaskModal">
+                                            <i class="fa-solid fa-pen text-primary me-2"></i> Edit Task
+                                        </button>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form th:action="@{'/boards/' + ${board.id} + '/tasks/' + ${task.id} + '/delete'}" method="post"
+                                              onsubmit="return confirm('Delete this task?');">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fa-solid fa-trash me-2"></i> Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h4 class="task-title" th:text="${task.title}">Task Title</h4>
+
+                        <p class="task-desc" th:if="${task.description != null and !task.description.isEmpty()}" th:text="${task.description}">
+                            Task details...
+                        </p>
+
+                        <div class="task-meta">
+                            <div>
+                                <span th:if="${task.dueDate != null}" class="task-due-date"
+                                      th:classappend="${task.isOverdue()} ? 'overdue' : (${task.isDueToday()} ? 'due-today' : '')">
+                                    <i class="fa-regular fa-clock"></i>
+                                    <span th:text="${#temporals.format(task.dueDate, 'MMM dd')}">Oct 15</span>
+                                </span>
+                                <span th:if="${task.dueDate == null}" class="task-due-date">
+                                    <i class="fa-regular fa-calendar-xmark"></i> No date
+                                </span>
+                            </div>
+
+                            <!-- Stepper (Left to Todo, Right to Done) -->
+                            <div class="card-stepper">
+                                <form th:action="@{'/boards/' + ${board.id} + '/tasks/' + ${task.id} + '/step'}" method="post" class="m-0">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="forward" value="false" />
+                                    <button type="submit" class="btn-card-step" title="Move back to To Do">
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                    </button>
+                                </form>
+                                <form th:action="@{'/boards/' + ${board.id} + '/tasks/' + ${task.id} + '/step'}" method="post" class="m-0">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="forward" value="true" />
+                                    <button type="submit" class="btn-card-step" title="Move to Done">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div th:if="${inProgressTasks.isEmpty()}" class="empty-state-box">
+                        <i class="fa-solid fa-person-running fs-2 mb-2 text-muted"></i>
+                        <div>Nothing in progress.</div>
+                        <small>Drag tasks here to start working</small>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ===============================================================
+                 COLUMN 3: DONE
+                 =============================================================== -->
+            <div class="kanban-column" id="col-done">
+                <div class="column-header column-header-done">
+                    <h3 class="column-title">
+                        <span class="brand-icon" style="background: var(--quaternary-mint); color: #1E293B;">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                        <span>Done</span>
+                    </h3>
+                    <span class="column-count-badge" th:text="${doneTasks.size()}">0</span>
+                </div>
+
+                <div class="column-dropzone" data-status="DONE" id="dropzone-done">
+                    
+                    <!-- Task Cards Loop -->
+                    <div th:each="task : ${doneTasks}" class="task-card" style="background: #F8FAFC;"
+                         th:data-id="${task.id}"
+                         th:data-title="${task.title}"
+                         th:data-description="${task.description}"
+                         th:data-status="${task.status.name()}"
+                         th:data-priority="${task.priority.name()}"
+                         th:data-due-date="${task.dueDate != null ? task.dueDate.toString() : ''}"
+                         th:data-board-id="${board.id}">
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge-priority" th:classappend="${task.priority.badgeClass}" th:text="${task.priority.displayName}">
+                                LOW
+                            </span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm p-0 text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-ellipsis-vertical fs-6"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-dark shadow-sm">
+                                    <li>
+                                        <button type="button" class="dropdown-item btn-open-edit-task" data-bs-toggle="modal" data-bs-target="#editTaskModal">
+                                            <i class="fa-solid fa-pen text-primary me-2"></i> Edit Task
+                                        </button>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form th:action="@{'/boards/' + ${board.id} + '/tasks/' + ${task.id} + '/delete'}" method="post"
+                                              onsubmit="return confirm('Delete this task?');">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fa-solid fa-trash me-2"></i> Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h4 class="task-title text-decoration-line-through text-muted" th:text="${task.title}">Task Title</h4>
+
+                        <p class="task-desc text-muted" th:if="${task.description != null and !task.description.isEmpty()}" th:text="${task.description}">
+                            Task details...
+                        </p>
+
+                        <div class="task-meta">
+                            <div>
+                                <span class="badge bg-success-subtle text-success border border-success rounded-pill px-2 py-0.5" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-circle-check me-1"></i> Complete
+                                </span>
+                            </div>
+
+                            <!-- Stepper (Left to In Progress) -->
+                            <div class="card-stepper">
+                                <form th:action="@{'/boards/' + ${board.id} + '/tasks/' + ${task.id} + '/step'}" method="post" class="m-0">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="forward" value="false" />
+                                    <button type="submit" class="btn-card-step" title="Move back to In Progress">
+                                        <i class="fa-solid fa-arrow-left"></i> <span>Reopen</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div th:if="${doneTasks.isEmpty()}" class="empty-state-box">
+                        <i class="fa-solid fa-award fs-2 mb-2 text-muted"></i>
+                        <div>No finished tasks yet.</div>
+                        <small>Drag tasks here when done!</small>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ===============================================================
+             BOARD STICKY NOTES & SCRATCHPAD SECTION
+             =============================================================== -->
+        <div class="sticker-card p-4 mt-5" style="background: #FFFFFF;">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="brand-icon" style="background: var(--tertiary-yellow); color: #1E293B;">
+                        <i class="fa-solid fa-note-sticky"></i>
+                    </span>
+                    <h2 class="h4 fw-black mb-0">Board Sticky Notes (<span th:text="${boardNotes != null ? boardNotes.size() : 0}">0</span>)</h2>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button type="button" class="btn-candy btn-candy-yellow btn-candy-sm" data-bs-toggle="modal" data-bs-target="#createBoardNoteModal">
+                        <i class="fa-solid fa-plus-circle"></i> Add Note to Board
+                    </button>
+                    <a th:href="@{'/notes'(boardId=${board.id})}" class="btn-candy btn-candy-white btn-candy-sm">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in Notes Hub
+                    </a>
+                </div>
+            </div>
+
+            <!-- Empty Notes State -->
+            <div th:if="${boardNotes == null or boardNotes.isEmpty()}" class="p-4 text-center rounded-3 my-2" style="background: var(--bg-canvas); border: 2px dashed #CBD5E1;">
+                <p class="text-muted fw-bold mb-2">No sticky notes attached to this board yet.</p>
+                <button type="button" class="btn-candy btn-candy-sm btn-candy-yellow" data-bs-toggle="modal" data-bs-target="#createBoardNoteModal">
+                    <i class="fa-solid fa-plus-circle"></i> Add First Note
+                </button>
+            </div>
+
+            <!-- Board Sticky Notes Grid -->
+            <div class="notes-grid mt-3" th:if="${boardNotes != null and !boardNotes.isEmpty()}">
+                <div th:each="note, iterStat : ${boardNotes}" 
+                     class="note-card"
+                     th:classappend="'note-' + ${note.color != null ? note.color : 'yellow'} + ' note-tilt-' + ${(iterStat.index % 4) + 1}">
+                    
+                    <div class="note-tape"></div>
+
+                    <div>
+                        <div class="note-header">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span th:if="${note.pinned}" class="note-pin-badge">
+                                    <i class="fa-solid fa-thumbtack"></i> Pinned
+                                </span>
+                                <span th:if="${note.category != null and !note.category.isEmpty()}" class="note-category-tag" th:text="${note.category}">
+                                    Tag
+                                </span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-1">
+                                <!-- Pin toggle -->
+                                <form th:action="@{'/notes/' + ${note.id} + '/pin'}" method="post" class="d-inline m-0">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="returnUrl" th:value="'/boards/' + ${board.id}" />
+                                    <button type="submit" class="btn btn-sm p-0 border-0" 
+                                            th:title="${note.pinned ? 'Unpin Note' : 'Pin Note'}"
+                                            style="background: transparent; color: #1E293B;">
+                                        <i th:class="${note.pinned ? 'fa-solid fa-thumbtack text-danger fs-5' : 'fa-regular fa-thumbtack text-muted fs-6'}"></i>
+                                    </button>
+                                </form>
+
+                                <!-- Options dropdown -->
+                                <div class="dropdown">
+                                    <button class="btn btn-sm p-1 text-dark border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: transparent;">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-2 border-dark shadow-sm">
+                                        <li>
+                                            <a class="dropdown-item" th:href="@{'/notes/' + ${note.id} + '/edit'}">
+                                                <i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit Note
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form th:action="@{'/notes/' + ${note.id} + '/delete'}" method="post" class="m-0"
+                                                  onsubmit="return confirm('Delete this note?');">
+                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                <input type="hidden" name="returnUrl" th:value="'/boards/' + ${board.id}" />
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="fa-solid fa-trash me-2"></i> Delete Note
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="note-title mb-2" th:text="${note.title}">Note Title</h4>
+                        <div class="note-content-body" th:text="${note.content}">Note text...</div>
+                    </div>
+
+                    <div class="note-footer">
+                        <small class="text-muted fw-bold" style="font-size: 0.72rem;">
+                            <i class="fa-regular fa-clock me-1"></i>
+                            <span th:text="${#temporals.format(note.updatedAt != null ? note.updatedAt : note.createdAt, 'MMM dd, HH:mm')}">Date</span>
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- =======================================================================
+         CREATE TASK MODAL
+         ======================================================================= -->
+    <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true"
+         th:classappend="${showCreateTaskModal} ? 'show d-block' : ''">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content playful-modal">
+                <div class="modal-header playful-modal-header">
+                    <h5 class="modal-title fw-bold" id="createTaskModalLabel">
+                        <i class="fa-solid fa-plus-circle me-1" style="color: var(--accent-violet);"></i> Add New Task
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{'/boards/' + ${board.id} + '/tasks'}" th:object="${newTask}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div class="modal-body p-4">
+                        
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="taskTitle" class="playful-label">Task Title *</label>
+                            <input type="text" id="taskTitle" th:field="*{title}" class="form-control playful-input"
+                                   th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''"
+                                   placeholder="e.g. Design System Tokens" required>
+                            <div class="text-danger small mt-1 fw-bold" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">
+                                Title required.
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="taskDesc" class="playful-label">Description (Optional)</label>
+                            <textarea id="taskDesc" th:field="*{description}" class="form-control playful-input" rows="3"
+                                      placeholder="Provide context, acceptance criteria, or links..."></textarea>
+                        </div>
+
+                        <!-- Status & Priority Row -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label for="taskStatus" class="playful-label">Status *</label>
+                                <select id="taskStatus" th:field="*{status}" class="form-select playful-input" required>
+                                    <option th:each="st : ${T(com.example.kanban.model.TaskStatus).values()}"
+                                            th:value="${st}" th:text="${st.displayName}">To Do</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="taskPriority" class="playful-label">Priority *</label>
+                                <select id="taskPriority" th:field="*{priority}" class="form-select playful-input" required>
+                                    <option th:each="pr : ${T(com.example.kanban.model.TaskPriority).values()}"
+                                            th:value="${pr}" th:text="${pr.displayName}">Medium</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Due Date -->
+                        <div class="mb-2">
+                            <label for="taskDueDate" class="playful-label">Due Date (Optional)</label>
+                            <input type="date" id="taskDueDate" th:field="*{dueDate}" class="form-control playful-input"
+                                   th:classappend="${#fields.hasErrors('dueDate')} ? 'is-invalid' : ''">
+                            <div class="text-danger small mt-1 fw-bold" th:if="${#fields.hasErrors('dueDate')}" th:errors="*{dueDate}">
+                                Invalid due date.
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer playful-modal-footer">
+                        <button type="button" class="btn-candy btn-candy-white" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-candy btn-candy-primary">
+                            <i class="fa-solid fa-plus"></i> Create Task
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =======================================================================
+         EDIT TASK MODAL (Reactive pre-population)
+         ======================================================================= -->
+    <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content playful-modal">
+                <div class="modal-header playful-modal-header" style="background: var(--tertiary-yellow-light);">
+                    <h5 class="modal-title fw-bold" id="editTaskModalLabel">
+                        <i class="fa-solid fa-pen-to-square me-1" style="color: #D97706;"></i> Edit Task
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editTaskForm" method="post" action="#">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="id" value="" />
+                    <div class="modal-body p-4">
+                        
+                        <div class="mb-3">
+                            <label class="playful-label">Task Title *</label>
+                            <input type="text" name="title" class="form-control playful-input" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="playful-label">Description (Optional)</label>
+                            <textarea name="description" class="form-control playful-input" rows="3"></textarea>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="playful-label">Status *</label>
+                                <select name="status" class="form-select playful-input" required>
+                                    <option th:each="st : ${T(com.example.kanban.model.TaskStatus).values()}"
+                                            th:value="${st}" th:text="${st.displayName}">To Do</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="playful-label">Priority *</label>
+                                <select name="priority" class="form-select playful-input" required>
+                                    <option th:each="pr : ${T(com.example.kanban.model.TaskPriority).values()}"
+                                            th:value="${pr}" th:text="${pr.displayName}">Medium</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="playful-label">Due Date (Optional)</label>
+                            <input type="date" name="dueDate" class="form-control playful-input">
+                        </div>
+
+                    </div>
+                    <div class="modal-footer playful-modal-footer">
+                        <button type="button" class="btn-candy btn-candy-white" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-candy btn-candy-yellow">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =======================================================================
+         EDIT BOARD MODAL
+         ======================================================================= -->
+    <div class="modal fade" id="editBoardModal" tabindex="-1" aria-labelledby="editBoardModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content playful-modal">
+                <div class="modal-header playful-modal-header">
+                    <h5 class="modal-title fw-bold" id="editBoardModalLabel">
+                        <i class="fa-solid fa-pen-to-square me-1" style="color: var(--accent-violet);"></i> Edit Board Settings
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{'/boards/' + ${board.id} + '/edit'}" th:object="${editBoard}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" th:field="*{id}" />
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label for="editBoardTitle" class="playful-label">Board Title *</label>
+                            <input type="text" id="editBoardTitle" th:field="*{title}" class="form-control playful-input" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBoardDesc" class="playful-label">Description (Optional)</label>
+                            <textarea id="editBoardDesc" th:field="*{description}" class="form-control playful-input" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer playful-modal-footer">
+                        <button type="button" class="btn-candy btn-candy-white" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-candy btn-candy-primary">
+                            <i class="fa-solid fa-check"></i> Update Board
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =======================================================================
+         CREATE BOARD STICKY NOTE MODAL
+         ======================================================================= -->
+    <div class="modal fade" id="createBoardNoteModal" tabindex="-1" aria-labelledby="createBoardNoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content sticker-card" style="box-shadow: 8px 8px 0px #1E293B;">
+                <div class="modal-header border-bottom border-dark border-2 px-4 py-3" style="background: var(--tertiary-yellow-light);">
+                    <h5 class="modal-title fw-black mb-0" id="createBoardNoteModalLabel">
+                        <i class="fa-solid fa-note-sticky text-warning me-2"></i> Add Sticky Note to This Board
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/notes}" th:object="${newNote}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="returnUrl" th:value="'/boards/' + ${board.id}" />
+                    <input type="hidden" th:field="*{boardId}" />
+
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label for="boardNoteTitle" class="form-label fw-bold">Note Title <span class="text-danger">*</span></label>
+                            <input type="text" id="boardNoteTitle" th:field="*{title}" class="form-control form-control-playful" 
+                                   placeholder="e.g. Sprint checklist, API contracts..." required maxlength="120">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="boardNoteContent" class="form-label fw-bold">Content <span class="text-danger">*</span></label>
+                            <textarea id="boardNoteContent" th:field="*{content}" class="form-control form-control-playful" 
+                                      rows="5" placeholder="Write thoughts, checklist items, snippets..." required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold d-block">Sticky Note Color</label>
+                            <div class="color-picker-grid">
+                                <label class="color-option-label" style="background: #FEF08A;">
+                                    <input type="radio" th:field="*{color}" value="yellow" checked>
+                                    <span class="color-swatch-circle" style="background: #FACC15;"></span>
+                                    <span>Yellow</span>
+                                </label>
+                                <label class="color-option-label" style="background: #FBCFE8;">
+                                    <input type="radio" th:field="*{color}" value="pink">
+                                    <span class="color-swatch-circle" style="background: #F472B6;"></span>
+                                    <span>Pink</span>
+                                </label>
+                                <label class="color-option-label" style="background: #A7F3D0;">
+                                    <input type="radio" th:field="*{color}" value="mint">
+                                    <span class="color-swatch-circle" style="background: #34D399;"></span>
+                                    <span>Mint</span>
+                                </label>
+                                <label class="color-option-label" style="background: #DDD6FE;">
+                                    <input type="radio" th:field="*{color}" value="violet">
+                                    <span class="color-swatch-circle" style="background: #8B5CF6;"></span>
+                                    <span>Violet</span>
+                                </label>
+                                <label class="color-option-label" style="background: #BAE6FD;">
+                                    <input type="radio" th:field="*{color}" value="blue">
+                                    <span class="color-swatch-circle" style="background: #38BDF8;"></span>
+                                    <span>Blue</span>
+                                </label>
+                                <label class="color-option-label" style="background: #FED7AA;">
+                                    <input type="radio" th:field="*{color}" value="peach">
+                                    <span class="color-swatch-circle" style="background: #FB923C;"></span>
+                                    <span>Peach</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="boardNoteCat" class="form-label fw-bold">Tag / Category</label>
+                                <input type="text" id="boardNoteCat" th:field="*{category}" class="form-control form-control-playful" 
+                                       placeholder="e.g. Sprint, Architecture, QA">
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check p-3 rounded-3 w-100" style="background: var(--tertiary-yellow-light); border: 2px solid #1E293B;">
+                                    <input class="form-check-input" type="checkbox" id="boardNotePin" th:field="*{pinned}" style="border: 2px solid #1E293B;">
+                                    <label class="form-check-label fw-bold ms-2" for="boardNotePin">
+                                        <i class="fa-solid fa-thumbtack text-danger me-1"></i> Pin note to top
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top border-dark border-2 px-4 py-3 bg-light">
+                        <button type="button" class="btn-candy btn-candy-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-candy btn-candy-primary">
+                            <i class="fa-solid fa-check"></i> Save to Board
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Edit Board')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanbanPop! | Edit Board</title>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <!-- Global Alerts -->
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main class="container py-5 my-auto">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                
+                <div class="sticker-card p-4 p-md-5" style="box-shadow: 8px 8px 0px #1E293B;">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <a th:href="@{'/boards/' + ${boardId}}" class="btn-candy btn-candy-white btn-candy-sm">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </a>
+                        <span class="badge border border-dark rounded-pill px-3 py-1" style="background: var(--tertiary-yellow); color: var(--text-main); font-weight: 700;">
+                            EDIT BOARD
+                        </span>
+                    </div>
+
+                    <h2 class="h3 fw-black mb-3">Edit Board Settings</h2>
+
+                    <form th:action="@{'/boards/' + ${boardId} + '/edit'}" th:object="${board}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input type="hidden" th:field="*{id}" />
+
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="playful-label">Board Title *</label>
+                            <input type="text" id="title" th:field="*{title}" class="form-control playful-input"
+                                   th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''" required>
+                            <div class="text-danger small mt-1 fw-bold" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">
+                                Title error.
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="description" class="playful-label">Description (Optional)</label>
+                            <textarea id="description" th:field="*{description}" class="form-control playful-input" rows="4"></textarea>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn-candy btn-candy-primary flex-grow-1 justify-content-center py-2">
+                                <i class="fa-solid fa-check"></i> Save Changes
+                            </button>
+                            <a th:href="@{'/boards/' + ${boardId}}" class="btn-candy btn-candy-white py-2">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Admin Supervisory Dashboard')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanbanPop! | Admin Portal</title>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <!-- Global Alerts -->
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <!-- Main Container -->
+    <main class="container-fluid px-lg-5 py-4">
+
+        <!-- Admin Header Banner -->
+        <div class="sticker-card p-4 mb-4" style="background: linear-gradient(135deg, var(--tertiary-yellow-light) 0%, #FFFFFF 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-0.5 mb-2 rounded-pill" 
+                         style="background: #D97706; color: #FFFFFF; border: 1.5px solid #1E293B; font-weight: 800; font-size: 0.8rem;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>SYSTEM ADMINISTRATION CONSOLE</span>
+                    </div>
+                    <h1 class="h2 fw-black mb-1">
+                        Enterprise Supervisory Portal
+                    </h1>
+                    <p class="text-muted mb-0 small">
+                        Logged in as administrator: <strong th:text="${currentAdmin}">admin</strong>. Manage users, roles, and system-wide board integrity.
+                    </p>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a th:href="@{/boards}" class="btn-candy btn-candy-white">
+                        <i class="fa-solid fa-table-columns"></i>
+                        <span>My Boards</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Stat Counter Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="sticker-card p-3 text-center" style="box-shadow: 4px 4px 0px #1E293B;">
+                    <span class="text-muted small fw-bold text-uppercase">Total Users</span>
+                    <div class="display-6 fw-black text-primary mt-1" th:text="${totalUsers}">2</div>
+                    <small class="text-muted"><i class="fa-solid fa-users me-1"></i> Registered accounts</small>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sticker-card p-3 text-center" style="box-shadow: 4px 4px 0px #1E293B;">
+                    <span class="text-muted small fw-bold text-uppercase">Administrators</span>
+                    <div class="display-6 fw-black text-warning mt-1" th:text="${adminCount}">1</div>
+                    <small class="text-muted"><i class="fa-solid fa-user-shield me-1"></i> Privileged users</small>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sticker-card p-3 text-center" style="box-shadow: 4px 4px 0px #1E293B;">
+                    <span class="text-muted small fw-bold text-uppercase">System Boards</span>
+                    <div class="display-6 fw-black text-success mt-1" th:text="${totalBoards}">3</div>
+                    <small class="text-muted"><i class="fa-solid fa-folder-open me-1"></i> Active workspaces</small>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sticker-card p-3 text-center" style="box-shadow: 4px 4px 0px #1E293B;">
+                    <span class="text-muted small fw-bold text-uppercase">Total Tasks</span>
+                    <div class="display-6 fw-black text-info mt-1" th:text="${totalTasks}">13</div>
+                    <small class="text-muted"><i class="fa-solid fa-list-check me-1"></i> Across all boards</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Users Table Card -->
+        <div class="sticker-card mb-4" style="box-shadow: 6px 6px 0px #1E293B;">
+            <div class="sticker-card-header" style="background: var(--accent-violet-light);">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-users fs-5" style="color: var(--accent-violet);"></i>
+                    <h2 class="h5 fw-bold mb-0">Registered Users &amp; Role Assignments</h2>
+                </div>
+                <span class="column-count-badge" th:text="${users.size() + ' Accounts'}">2 Accounts</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light border-bottom border-dark">
+                        <tr>
+                            <th class="ps-3">ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Current Role</th>
+                            <th>Boards Count</th>
+                            <th>Created</th>
+                            <th class="text-end pe-3">Administrative Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${users}">
+                            <td class="ps-3 fw-bold" th:text="${u.id}">1</td>
+                            <td>
+                                <strong th:text="${u.username}">admin</strong>
+                                <span th:if="${u.username == currentAdmin}" class="badge bg-secondary ms-1 rounded-pill" style="font-size: 0.65rem;">YOU</span>
+                            </td>
+                            <td class="text-muted" th:text="${u.email}">admin@kanban.local</td>
+                            <td>
+                                <span th:if="${u.role.name() == 'ROLE_ADMIN'}" class="badge bg-warning text-dark border border-dark rounded-pill px-2 py-1 fw-bold">
+                                    <i class="fa-solid fa-crown me-1"></i> ADMIN
+                                </span>
+                                <span th:if="${u.role.name() == 'ROLE_USER'}" class="badge bg-info text-dark border border-dark rounded-pill px-2 py-1 fw-bold">
+                                    <i class="fa-solid fa-user me-1"></i> USER
+                                </span>
+                            </td>
+                            <td th:text="${u.boards.size()}">1</td>
+                            <td class="small text-muted" th:text="${#temporals.format(u.createdAt, 'MMM dd, yyyy')}">Oct 10, 2026</td>
+                            <td class="text-end pe-3">
+                                <div class="d-flex justify-content-end gap-2" th:if="${u.username != currentAdmin}">
+                                    
+                                    <!-- Toggle Role Form -->
+                                    <form th:action="@{'/admin/users/' + ${u.id} + '/toggle-role'}" method="post" class="d-inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn-candy btn-candy-white btn-candy-sm"
+                                                th:title="${u.role.name() == 'ROLE_ADMIN' ? 'Demote to USER' : 'Promote to ADMIN'}">
+                                            <i class="fa-solid" th:classappend="${u.role.name() == 'ROLE_ADMIN' ? 'fa-arrow-down text-warning' : 'fa-arrow-up text-success'}"></i>
+                                            <span th:text="${u.role.name() == 'ROLE_ADMIN' ? 'Demote' : 'Promote'}">Toggle</span>
+                                        </button>
+                                    </form>
+
+                                    <!-- Delete User Form -->
+                                    <form th:action="@{'/admin/users/' + ${u.id} + '/delete'}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Delete this user and all their boards/tasks permanently?');">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn-candy btn-candy-secondary btn-candy-sm" title="Delete User">
+                                            <i class="fa-solid fa-trash-can"></i> Delete
+                                        </button>
+                                    </form>
+
+                                </div>
+                                <span th:if="${u.username == currentAdmin}" class="text-muted small fst-italic">Protected (Active Session)</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- System-Wide Boards Table Card -->
+        <div class="sticker-card" style="box-shadow: 6px 6px 0px #1E293B;">
+            <div class="sticker-card-header" style="background: var(--quaternary-mint-light);">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-table-columns fs-5" style="color: #059669;"></i>
+                    <h2 class="h5 fw-bold mb-0">System-Wide Boards Oversight</h2>
+                </div>
+                <span class="column-count-badge" th:text="${boards.size() + ' Total Boards'}">3 Boards</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light border-bottom border-dark">
+                        <tr>
+                            <th class="ps-3">ID</th>
+                            <th>Title</th>
+                            <th>Owner</th>
+                            <th>Tasks Breakdown</th>
+                            <th>Created Date</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="b : ${boards}">
+                            <td class="ps-3 fw-bold" th:text="${b.id}">1</td>
+                            <td>
+                                <strong th:text="${b.title}">Board Title</strong>
+                                <div class="small text-muted text-truncate" style="max-width: 250px;" th:text="${b.description}">Description</div>
+                            </td>
+                            <td>
+                                <span class="badge border border-dark rounded-pill bg-white text-dark px-2 py-1" th:text="${b.user.username}">owner</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <span class="badge bg-light text-dark border border-dark" th:text="${b.getTodoCount() + ' Todo'}">2 Todo</span>
+                                    <span class="badge bg-warning-subtle text-dark border border-dark" th:text="${b.getInProgressCount() + ' Prog'}">1 Prog</span>
+                                    <span class="badge bg-success-subtle text-dark border border-dark" th:text="${b.getDoneCount() + ' Done'}">3 Done</span>
+                                </div>
+                            </td>
+                            <td class="small text-muted" th:text="${#temporals.format(b.createdAt, 'MMM dd, yyyy')}">Oct 10, 2026</td>
+                            <td class="text-end pe-3">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a th:href="@{'/boards/' + ${b.id}}" class="btn-candy btn-candy-white btn-candy-sm">
+                                        <i class="fa-solid fa-eye"></i> View
+                                    </a>
+                                    <form th:action="@{'/admin/boards/' + ${b.id} + '/delete'}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Permanently delete this board?');">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn-candy btn-candy-secondary btn-candy-sm" title="Delete Board">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

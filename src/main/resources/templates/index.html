@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Home')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanbanPop! | Home</title>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <!-- Main Hero -->
+    <main class="container py-5">
+        
+        <!-- Hero Banner -->
+        <div class="row align-items-center g-4 my-3">
+            <div class="col-lg-7">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill" 
+                     style="background: var(--tertiary-yellow); border: 2px solid #1E293B; box-shadow: 2px 2px 0px #1E293B; font-weight: 800; font-size: 0.85rem;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>PLAYFUL GEOMETRIC DESIGN SYSTEM</span>
+                </div>
+
+                <h1 class="display-4 fw-black mb-3" style="line-height: 1.15; font-weight: 800;">
+                    Enterprise To-Do &amp; Sticky Notes, <span style="background: linear-gradient(120deg, #8B5CF6, #F472B6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Delightfully Tactile.</span>
+                </h1>
+
+                <p class="lead text-muted mb-4" style="font-size: 1.2rem;">
+                    A robust, full-stack Spring Boot 3 productivity system combining multi-board Kanban task management with tactile sticky notes. Drag-and-drop tasks, jot down scratchpad thoughts, and pin key ideas.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <a th:href="@{/register}" href="/register" class="btn-candy btn-candy-primary px-4 py-2 fs-5">
+                        <i class="fa-solid fa-rocket"></i>
+                        <span>Start Free Workspace</span>
+                    </a>
+                    <a th:href="@{/login}" href="/login" class="btn-candy btn-candy-white px-4 py-2 fs-5">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Log In</span>
+                    </a>
+                </div>
+
+                <!-- Instant Demo Credentials Helper -->
+                <div class="p-3 rounded-4" style="background: #FFFFFF; border: 2px solid #1E293B; box-shadow: 4px 4px 0px #1E293B; max-width: 520px;">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-dark rounded-pill">PRE-LOADED DEMO ACCOUNTS</span>
+                        <small class="text-muted fw-bold">Click to copy or sign in directly</small>
+                    </div>
+                    <div class="d-flex flex-wrap gap-3 font-monospace small">
+                        <div>
+                            <strong>Demo User:</strong> <span class="bg-light px-2 py-0.5 border border-dark rounded">demo</span> / <span class="bg-light px-2 py-0.5 border border-dark rounded">password123</span>
+                        </div>
+                        <div>
+                            <strong>Admin:</strong> <span class="bg-light px-2 py-0.5 border border-dark rounded">admin</span> / <span class="bg-light px-2 py-0.5 border border-dark rounded">admin123</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Graphic Illustration -->
+            <div class="col-lg-5">
+                <div class="sticker-card p-4 text-center" style="box-shadow: 8px 8px 0px #1E293B; background: #FFFDF5;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge border border-dark rounded-pill px-3 py-1" style="background: var(--accent-violet); color: #FFF; font-weight: 700;">
+                            <i class="fa-solid fa-columns"></i> 3-Column Board
+                        </span>
+                        <span class="column-count-badge">Live Preview</span>
+                    </div>
+
+                    <!-- Mini Board Preview Mockup -->
+                    <div class="d-flex flex-column gap-3 text-start">
+                        <!-- Card 1 -->
+                        <div class="task-card" style="box-shadow: 3px 3px 0px #1E293B;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="badge-priority badge-priority-urgent">URGENT</span>
+                                <small class="text-muted fw-bold">In Progress</small>
+                            </div>
+                            <div class="task-title mt-2">🎨 Playful Geometric Design</div>
+                            <div class="task-desc mb-2">Tactile candy buttons &amp; 4px pop shadows.</div>
+                            <div class="task-meta">
+                                <span class="task-due-date"><i class="fa-regular fa-clock"></i> 2 Days Left</span>
+                                <span class="btn-card-step"><i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Sticky Note Preview -->
+                        <div class="note-card note-yellow p-3" style="min-height: auto; box-shadow: 3px 3px 0px #1E293B;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="note-pin-badge" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">
+                                    <i class="fa-solid fa-thumbtack"></i> Pinned
+                                </span>
+                                <span class="note-category-tag" style="font-size: 0.65rem;">Scratchpad</span>
+                            </div>
+                            <div class="fw-bold fs-6 text-dark mt-1">📝 Architecture Quick Note</div>
+                            <small class="text-secondary">Tactile sticky notes with custom colors &amp; instant search!</small>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-top border-dark d-flex justify-content-center gap-2 flex-wrap">
+                        <span class="badge bg-white text-dark border border-dark rounded-pill"><i class="fa-solid fa-hand-pointer text-primary me-1"></i> Drag &amp; Drop</span>
+                        <span class="badge bg-white text-dark border border-dark rounded-pill"><i class="fa-solid fa-note-sticky text-warning me-1"></i> Sticky Notes</span>
+                        <span class="badge bg-white text-dark border border-dark rounded-pill"><i class="fa-solid fa-shield text-success me-1"></i> CSRF &amp; RBAC</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Feature Cards Section -->
+        <div class="row g-4 mt-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="sticker-card p-4 h-100" style="box-shadow: 6px 6px 0px var(--accent-violet);">
+                    <div class="d-inline-flex p-3 rounded-circle mb-3 border border-dark" style="background: var(--accent-violet-light);">
+                        <i class="fa-solid fa-table-columns fs-3" style="color: var(--accent-violet);"></i>
+                    </div>
+                    <h3 class="h5 mb-2">Multi-Board To-Do</h3>
+                    <p class="text-muted mb-0 small">Create customized project boards, organize tasks into To-Do, In-Progress, and Done with HTML5 drag-and-drop &amp; confetti celebrations.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="sticker-card p-4 h-100" style="box-shadow: 6px 6px 0px var(--tertiary-yellow);">
+                    <div class="d-inline-flex p-3 rounded-circle mb-3 border border-dark" style="background: var(--tertiary-yellow-light);">
+                        <i class="fa-solid fa-note-sticky fs-3" style="color: #D97706;"></i>
+                    </div>
+                    <h3 class="h5 mb-2">Tactile Sticky Notes</h3>
+                    <p class="text-muted mb-0 small">Jot quick thoughts, sprint checklists, and meeting snippets with color themes, pin-to-top, and direct board linking.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="sticker-card p-4 h-100" style="box-shadow: 6px 6px 0px var(--secondary-pink);">
+                    <div class="d-inline-flex p-3 rounded-circle mb-3 border border-dark" style="background: var(--secondary-pink-light);">
+                        <i class="fa-solid fa-user-shield fs-3" style="color: #DB2777;"></i>
+                    </div>
+                    <h3 class="h5 mb-2">Enterprise RBAC</h3>
+                    <p class="text-muted mb-0 small">Isolated user workspaces, BCrypt password hashing, CSRF tokens, and supervisory Admin portal for total control.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="sticker-card p-4 h-100" style="box-shadow: 6px 6px 0px var(--quaternary-mint);">
+                    <div class="d-inline-flex p-3 rounded-circle mb-3 border border-dark" style="background: var(--quaternary-mint-light);">
+                        <i class="fa-solid fa-bolt fs-3" style="color: #059669;"></i>
+                    </div>
+                    <h3 class="h5 mb-2">Zero-Config Setup</h3>
+                    <p class="text-muted mb-0 small">Pre-seeded demo accounts and embedded in-memory H2 database. Run anywhere instantly with no database installation required.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

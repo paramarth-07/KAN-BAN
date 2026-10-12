@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('403 - Access Denied')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanbanPop! | 403 Forbidden</title>
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <main class="container py-5 my-auto text-center">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                
+                <div class="sticker-card p-5" style="box-shadow: 8px 8px 0px #1E293B;">
+                    <div class="d-inline-flex p-4 rounded-circle mb-3 border border-dark" style="background: #FEE2E2; box-shadow: 4px 4px 0px #1E293B;">
+                        <i class="fa-solid fa-hand fs-1" style="color: #DC2626;"></i>
+                    </div>
+
+                    <h1 class="display-3 fw-black mb-2" style="font-weight: 900; color: #DC2626;">403</h1>
+                    <h2 class="h3 fw-bold mb-3">Access Denied!</h2>
+                    
+                    <p class="text-muted mb-4" th:text="${message != null ? message : 'You do not have permission to view or modify this resource.'}">
+                        This resource is restricted by role-based access control.
+                    </p>
+
+                    <div th:if="${path != null and #strings.contains(path, 'admin')}" class="text-start p-3 rounded-3 mb-4 border border-dark" style="background: #FEF3C7; box-shadow: 3px 3px 0px #1E293B;">
+                        <div class="fw-bold text-dark mb-1"><i class="fa-solid fa-shield-halved text-warning me-1"></i> Admin Account Required</div>
+                        <p class="small text-muted mb-2">The Supervisory Portal is restricted to administrators. If you are signed in as a standard user (e.g. <code>demo</code>), please switch to the admin account:</p>
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded bg-white border border-dark font-monospace small">
+                            <span>User: <strong>admin</strong> | Pass: <strong>admin123</strong></span>
+                            <form th:action="@{/logout}" method="post" class="m-0">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <button type="submit" class="btn-candy btn-candy-secondary btn-candy-sm py-1">Log In as Admin</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3">
+                        <a th:href="@{/boards}" href="/boards" class="btn-candy btn-candy-primary px-4 py-2 fs-5">
+                            <i class="fa-solid fa-house"></i> Return to My Boards
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>
